@@ -6,25 +6,30 @@ Version: 1.5
 Author: CodyBrackets
 */
 
-function getGptModel(): string {
+function getGptModel(): string
+{
   return get_option('chatgpt_model') ?: 'gpt-3.5-turbo';
 }
 
 //----- ADD CUSTOM URL TO REWRITE
-function gpt_custom_urls_page() {
+function gpt_custom_urls_page()
+{
   ?>
   <div class="wrap">
     <h1>Manual URL Scraper</h1>
     <form method="post" id="custom-url-form">
-      <textarea name="custom_urls" rows="10" style="width:100%;" placeholder="Paste one URL per line..." required></textarea><br><br>
+      <textarea name="custom_urls" rows="10" style="width:100%;" placeholder="Paste one URL per line..."
+        required></textarea><br><br>
       <input type="submit" class="button button-primary" value="Start Processing">
     </form>
 
-    <div id="status-box" style="display:none; margin-top: 20px; max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;"></div>
+    <div id="status-box"
+      style="display:none; margin-top: 20px; max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+    </div>
 
     <div class="progress" style="height: 25px; margin-top: 10px; display:none;">
-      <div id="progress-fill" class="progress-bar progress-bar-striped progress-bar-animated bg-info" 
-           role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+      <div id="progress-fill" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar"
+        style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
     </div>
   </div>
 
@@ -40,7 +45,7 @@ function gpt_custom_urls_page() {
       const progress = document.querySelector(".progress");
       const progressFill = document.getElementById("progress-fill");
       const button = this.querySelector("input[type='submit']");
-      
+
       statusBox.innerHTML = "";
       statusBox.style.display = "block";
       progress.style.display = "block";
@@ -69,27 +74,27 @@ function gpt_custom_urls_page() {
             url: url
           })
         })
-        .then(r => r.json())
-        .then(result => {
-          if (result.success) {
-            statusBox.innerHTML += `<p style="color:green;">✅ ${result.data}</p>`;
-          } else {
-            statusBox.innerHTML += `<p style="color:red;">❌ ${result.data}</p>`;
-          }
+          .then(r => r.json())
+          .then(result => {
+            if (result.success) {
+              statusBox.innerHTML += `<p style="color:green;">✅ ${result.data}</p>`;
+            } else {
+              statusBox.innerHTML += `<p style="color:red;">❌ ${result.data}</p>`;
+            }
 
-          count++;
-          const percent = Math.round((count / total) * 100);
-          progressFill.style.width = percent + "%";
-          progressFill.setAttribute("aria-valuenow", percent);
-          progressFill.innerText = percent + "%";
+            count++;
+            const percent = Math.round((count / total) * 100);
+            progressFill.style.width = percent + "%";
+            progressFill.setAttribute("aria-valuenow", percent);
+            progressFill.innerText = percent + "%";
 
-          processNext();
-        })
-        .catch(() => {
-          statusBox.innerHTML += `<p style="color:red;">❌ Error on ${url}</p>`;
-          count++;
-          processNext();
-        });
+            processNext();
+          })
+          .catch(() => {
+            statusBox.innerHTML += `<p style="color:red;">❌ Error on ${url}</p>`;
+            count++;
+            processNext();
+          });
       }
 
       processNext();
@@ -125,7 +130,7 @@ add_action('admin_menu', function () {
     'chatgpt-webscraper-settings',
     'chatgpt_settings_page'
   );
-  
+
 });
 
 add_filter('plugin_action_links_chatgpt-webscraper-scheduler/chatgpt-webscraper-scheduler.php', function ($links) {
@@ -145,6 +150,15 @@ function gpt_web_scraper_page()
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;">
         <div>
           <strong>📌 Current Schedule:</strong><br>
+          <?php
+          $currentPrompt = get_option('chatgpt_prompt_template');
+            if ($currentPrompt) {
+              echo '<div style="background:#fff3cd;border-left:4px solid #ffeeba;padding:10px;margin:10px 0;">
+                <strong>💡 Current Prompt Template:</strong><br>
+                <pre style="white-space:pre-wrap;">' . esc_html($currentPrompt) . '</pre>
+              </div>';
+            }
+            ;?>
           <ul style="margin: 8px 0 0 16px;">
             <li><strong>Topic:</strong> <?= esc_html($saved['topic']) ?></li>
             <?php if (!empty($saved['year_start']) && !empty($saved['year_end'])): ?>
@@ -383,10 +397,10 @@ add_action('wp_ajax_gpt_scraper_process_url', function () {
 
   $body = wp_remote_retrieve_body($response);
   $lower = strtolower($body);
-  
+
   // Skip if body is too short or contains Cloudflare/error indicators
   if (
-    empty($body) || 
+    empty($body) ||
     strlen($body) < 500
     //  || 
     // strpos($lower, 'cloudflare ray id') !== false ||
@@ -398,7 +412,7 @@ add_action('wp_ajax_gpt_scraper_process_url', function () {
     wp_send_json_success("⚠️ Skipped (Blocked or invalid page): ");
     return;
   }
-  
+
   // Basic validation
   if (empty($body) || strlen($body) < 100) {
     wp_send_json_success("⚠️ Skipped (Empty or short content): ");
@@ -434,7 +448,7 @@ add_action('wp_ajax_gpt_scraper_process_url', function () {
   $title = wp_strip_all_tags($title);
 
   if (empty($title) || strlen($title) < 5) {
-    wp_send_json_success("⚠️ Skipped (Title too short or missing): " );
+    wp_send_json_success("⚠️ Skipped (Title too short or missing): ");
     return;
   }
 
@@ -481,7 +495,7 @@ add_action('wp_ajax_gpt_scraper_process_url', function () {
 
   // Add check to skip if GPT gives filler response
   if ($skip_empty && (!$content || str_contains($content, 'Oops') || strlen($content) < 200)) {
-    wp_send_json_success("⚠️ Skipped (GPT gave no meaningful rewrite): " );
+    wp_send_json_success("⚠️ Skipped (GPT gave no meaningful rewrite): ");
     return;
   }
   if ($content) {
@@ -578,7 +592,8 @@ function gpt_rewrite_content($text, $preserve_language = false)
 function gpt_find_urls_via_chatgpt($topic, $count = 3, $retryLimit = 2)
 {
   $api_key = get_option('chatgpt_api_key');
-  if (!$api_key) return [];
+  if (!$api_key)
+    return [];
 
   $job = get_option('chatgpt_scrape_schedule');
   $year_start = $job['year_start'] ?? date('Y');
@@ -590,18 +605,17 @@ function gpt_find_urls_via_chatgpt($topic, $count = 3, $retryLimit = 2)
   while ($attempt < $retryLimit && count($urls) < $count) {
     $attempt++;
 
-    // Refined prompt
-    $prompt = <<<EOT
-You are a web researcher.
+    $template = get_option('chatgpt_prompt_template', 'Find exactly {count} real article URLs about "{topic}" from {year_start} to {year_end}. Return only https:// URLs, one per line.');
+    $prompt = str_replace(
+      ['{topic}', '{count}', '{year_start}', '{year_end}'],
+      [$topic, $count, $year_start, $year_end],
+      $template
+    );
 
-Find exactly $count specific blog or news article URLs (not homepages) related to the topic: "$topic".  
-
-Return only full URLs to working articles (not summaries or titles), formatted one per line. The links must start with http:// or https://.
-EOT;
 
     $response = wp_remote_post('https://api.openai.com/v1/chat/completions', [
       'headers' => [
-        'Content-Type'  => 'application/json',
+        'Content-Type' => 'application/json',
         'Authorization' => 'Bearer ' . $api_key,
       ],
       'body' => json_encode([
@@ -644,7 +658,7 @@ EOT;
   return $urls;
 }
 
-  
+
 
 // Settings
 function chatgpt_settings_page()
@@ -665,7 +679,8 @@ function chatgpt_settings_page()
 
 add_action('admin_init', function () {
   register_setting('chatgpt_settings', 'chatgpt_api_key');
-  register_setting('chatgpt_settings', 'chatgpt_model'); // ✅ This line enables saving
+  register_setting('chatgpt_settings', 'chatgpt_model');
+  register_setting('chatgpt_settings', 'chatgpt_prompt_template');
 
   add_settings_section('chatgpt_section', 'API Configuration', null, 'chatgpt-webscraper-settings');
 
@@ -678,6 +693,13 @@ add_action('admin_init', function () {
     $value = esc_attr(get_option('chatgpt_model', 'gpt-3.5-turbo'));
     echo "<input type='text' name='chatgpt_model' value='$value' style='width: 200px'>";
   }, 'chatgpt-webscraper-settings', 'chatgpt_section');
+
+  add_settings_field('chatgpt_prompt_template', 'GPT URL Search Prompt', function () {
+    $value = esc_attr(get_option('chatgpt_prompt_template', 'Find exactly {count} real article URLs about "{topic}" from {year_start} to {year_end}. Return only https:// URLs, one per line.'));
+    echo "<textarea name='chatgpt_prompt_template' rows='4' style='width: 100%;'>$value</textarea>";
+    echo '<p class="description">Use <code>{topic}</code>, <code>{count}</code>, <code>{year_start}</code>, <code>{year_end}</code> for dynamic values.</p>';
+  }, 'chatgpt-webscraper-settings', 'chatgpt_section');
 });
+
 
 ?>
