@@ -3,7 +3,7 @@
 Plugin Name: ChatGPT Web Scraper Scheduler
 Description: Automatically searches for URLs based on a topic, scrapes content, rewrites with ChatGPT, and creates WordPress posts over a set number of days.
 Version: 1.5
-Author: CodyBrackets
+Author: MikeAsuncion
 */
 
 function getGptModel(): string
